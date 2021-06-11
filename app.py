@@ -1,4 +1,5 @@
-""" Simple RESTful API
+""" 
+Simple RESTful API
 """
 
 from flask import Flask
@@ -13,6 +14,9 @@ api = Api(app)
 class RouteOne(Resource):
     def get(self):
         return {"data": "RouteOne: GET"}
+
+    def post(self):
+        return {"data": "RouteOne: POST"}
 
 ## API Routing ##
 # Add RouteOne to the API and define the endpoint
