@@ -18,10 +18,18 @@ response = requests.get(BASE_URL)
 print(response.text)
 
 # POST Request to RouteOne
-response = requests.post(BASE_URL)
+response = requests.post(BASE_URL, data={"name": "Stuart", "age": 46, "fav_colour": "Blue"})
 
 # Confirm response
 
 print(response.text)
 
+# Test Name is Mandatory
+response = requests.post(BASE_URL, data={"age": 47, "fav_colour": "Green"})
+print(response.text)
+
+# Test age is integer
+
+response = requests.post(BASE_URL, data={"name": "Ann", "age": 77})
+print(response.text)
 
