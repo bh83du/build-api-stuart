@@ -8,9 +8,9 @@ from flask_restful import Api, Resource, reqparse, abort
 app = Flask(__name__)
 api = Api(app)
 
-# Names dictionary
+# Album dictionary
 
-names = {}
+album = {}
 
 ## Argument Parsing ##
 
@@ -19,27 +19,41 @@ parser = reqparse.RequestParser()
 
 # Specify mandatory arguments
 parser.add_argument(
-    "name", type=str, help="Name is required", required=True)
+    "name", type=str, help="Album Name is required", required=True)
 parser.add_argument(
-    "age", type=int, help="Age is required", required=True)
+    "year", type=int, help="Release Year is required", required=True)
 parser.add_argument(
-    "fav_colour", type=str, help="Favourite Colour", required=False)
+    "label", type=str, help="Label is required", required=True)
+parser.add_argument(
+    "catalogue", type=str, help="Catalogue ID is required", required=True)
 
 ## Resources ##
 # Classes inherit from Resource
 
-class RouteOne(Resource):
-    def get(self):
-        return {"data": "RouteOne: GET"}
 
-    def post(self):
+class GetAlbums(Resource):
+    def get(self):
+        return album
+
+
+class GetAlbum(Resource):
+    def get(self, album_cat):
+        return album[album_cat]
+
+
+class NewAlbum(Resource):
+    def post(self, album_cat):
         args = parser.parse_args()
-        names.update(args)
-        return names
+        album[album_cat] = args
+        return album[album_cat]
+
 
 ## API Routing ##
-# Add RouteOne to the API and define the endpoint
-api.add_resource(RouteOne, '/')
+api.add_resource(GetAlbums, '/')
+api.add_resource(GetAlbum, '/album/<string:album_cat>')
+api.add_resource(NewAlbum, '/album/<string:album_cat>')
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
