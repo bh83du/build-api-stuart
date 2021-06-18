@@ -2,15 +2,18 @@
 Simple RESTful API
 """
 
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_restful import Api, Resource, reqparse, abort
+import boto3
+import botocore.exceptions
+import simplejson as json
+
+# Create the DynamoDB resource
+
+dynamodb = boto3.resource('dynamodb', region_name='eu-west-2', aws_access_key_id='REMOVED', aws_secret_access_key='REMOVED')
 
 app = Flask(__name__)
 api = Api(app)
-
-# Album dictionary
-
-album = {}
 
 ## Argument Parsing ##
 
@@ -21,9 +24,9 @@ parser = reqparse.RequestParser()
 parser.add_argument(
     "name", type=str, help="Album Name is required", required=True)
 parser.add_argument(
-    "year", type=int, help="Release Year is required", required=True)
+    "year", type=str, help="Release Year is required", required=True)
 parser.add_argument(
-    "label", type=str, help="Label is required", required=True)
+    "label", type=str, help="Label is required", required=False)
 parser.add_argument(
     "catalogue", type=str, help="Catalogue ID is required", required=True)
 
@@ -33,20 +36,48 @@ parser.add_argument(
 
 class GetAlbums(Resource):
     def get(self):
-        return album
+        # Get Table
+        try:
+            TABLE = dynamodb.Table('albums')
+            ALL_ALBUMS = TABLE.scan()
+            print(ALL_ALBUMS)
+            return ALL_ALBUMS['Items']
+        except:
+            return 'Error: Table Not Found'
 
 
 class GetAlbum(Resource):
     def get(self, album_cat):
-        return album[album_cat]
+        # Get Specific Album from Table
+        try:
+            TABLE = dynamodb.Table('albums')
+            ALBUM = TABLE.get_item(
+                Key={
+                    'catalogue': 'EMTC103'
+                }
+            )
+            return ALBUM['Item']
+        except:
+            return 'Error: Album Not Found'
 
 
 class NewAlbum(Resource):
     def post(self, album_cat):
         args = parser.parse_args()
-        album[album_cat] = args
-        return album[album_cat]
-
+        #Add Album to the table
+        try:
+            TABLE = dynamodb.Table('albums')
+            TABLE.put_item(
+                Item={
+                    'catalogue': args['catalogue'],
+                    'name': args['name'],
+                    'year': args['year'],
+                    'label': args['label']
+                }
+            )
+            return 'Album Added'
+        except:
+            return 'Album Not Added'
 
 ## API Routing ##
 api.add_resource(GetAlbums, '/')
